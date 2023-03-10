@@ -24,8 +24,8 @@ AForm cst2ast(start[Form] sf) {
 
 default AQuestion cst2ast(Question q) {
     switch (q) {
-        case (Question)`<Str label> <Id var> : <Type t>`:
-            return question("<label>", cst2ast(var), cst2ast(t), src=q.src);
+        case (Question)`<Str s> <Id var> : <Type t>`:
+            return question("<s>", cst2ast(var), cst2ast(t), src=q.src);
         case (Question)`<Str label> <Id var> : <Type t> = <Expr e>`:
             return computedQuestion("<label>", cst2ast(var), cst2ast(t), cst2ast(e), src=q.src);
         case (Question)`if (<Expr e>) {<Question* ifQs>} else {<Question* elseQs>}`:
@@ -46,6 +46,8 @@ AExpr cst2ast(Expr e) {
         return litInt(toInt("<i>"), src=i.src);
     case (Expr)`<Str s>`: 
         return litString("<s>", src=s.src);
+    case (Expr)`( <Expr e> )`: 
+        return cst2ast(e);
     case (Expr)`+ <Expr e>`: 
         return unaryPlus(cst2ast(e));
     case (Expr)`- <Expr e>`: 
@@ -81,19 +83,19 @@ AExpr cst2ast(Expr e) {
   }
 }
 
-//FIXME: Somehow both functions do not allow me to set the src
+
 AId cst2ast(Id var) {
-    return id("<var>");
+    return id("<var>", src=var.src);
 }
 
 default AType cst2ast(Type t) {
   switch (t) {
     case (Type)`boolean`: 
-        return typeBool();
+        return typeBool(src=t.src);
     case (Type)`integer`: 
-        return typeInt();
+        return typeInt(src=t.src);
     case (Type)`string`: 
-        return typeStr();
+        return typeStr(src=t.src);
 
     default: throw "Unhandled type: <t>";
   }
