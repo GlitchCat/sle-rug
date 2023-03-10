@@ -82,7 +82,7 @@ keyword Reserved = "true" | "false";
 
 // syntax Value = 
 
-keyword Type
+syntax Type
     = \bool: "boolean"
     | \int: "integer"
     | \str: "string" //TODO: check if correct type name?
