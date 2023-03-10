@@ -25,10 +25,34 @@ alias RefGraph = tuple[
 RefGraph resolve(AForm f) = <us, ds, us o ds>
   when Use us := uses(f), Def ds := defs(f);
 
+// Usage occurrence, all locations where a identifier(variable) is used
+// these include variables in computed questions, if statements and ifelse 
 Use uses(AForm f) {
-  return {}; 
+    Use total = {};
+
+    // add all references, which includes those in condition expressions
+    // Or those in the expression of computed questions
+    for(/ ref(AId id) := f) {
+        total += {<id.src, id.name>};
+    }
+
+    return total; 
 }
 
+// Defining occurrene, which are all identifiers (variables) declarations
+// Either defined in a normal or computer question.
 Def defs(AForm f) {
-  return {}; 
+    Def total = {};
+
+    // add all normal question type descendants
+    for(/ question(_, AId id, _) := f) {
+        total += {<id.name, id.src>};
+    }
+
+    // add all computed question type descendants
+    for(/ computedQuestion(_, AId id, _, _) := f) {
+        total += {<id.name, id.src>};
+    }
+
+    return total; 
 }
