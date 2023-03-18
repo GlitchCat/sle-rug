@@ -23,7 +23,7 @@ data AQuestion(loc src = |tmp:///|)
 // What about just the name literal?
 data AExpr(loc src = |tmp:///|)
     = ref(AId id)
-    | litBool(bool boolean) // We only have 3 literals, so no need to add an extra ADT
+    | litBool(bool boolean)
     | litInt(int integer)
     | litString(str string)
     | unaryPlus(AExpr expr) // Unary data types, to not store an irrelevant lhs
@@ -37,7 +37,7 @@ data AExpr(loc src = |tmp:///|)
     | lt(AExpr lhs, AExpr rhs)
     | geq(AExpr lhs, AExpr rhs)
     | leq(AExpr lhs, AExpr rhs)
-    | eq(AExpr lhs, AExpr rhs)
+    | equal(AExpr lhs, AExpr rhs)
     | neq(AExpr lhs, AExpr rhs)
     | and(AExpr lhs, AExpr rhs)
     | or(AExpr lhs, AExpr rhs)
