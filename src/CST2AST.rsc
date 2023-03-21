@@ -36,6 +36,9 @@ default AQuestion cst2ast(Question q) {
     }
 }
 
+//TODO: testing?
+// example: neq(litInt(1), litInt(2)) := cst2ast(parse(#Expr, "1 != 2"));
+// see: https://www.rascal-mpl.org/docs/Rascal/Tests/
 AExpr cst2ast(Expr e) {
   switch (e) {
     case (Expr)`<Id x>`: 
@@ -48,36 +51,36 @@ AExpr cst2ast(Expr e) {
         return litString("<s>", src=s.src);
     case (Expr)`( <Expr e> )`: 
         return cst2ast(e);
-    case (Expr)`+ <Expr e>`: 
-        return unaryPlus(cst2ast(e));
-    case (Expr)`- <Expr e>`: 
-        return unaryMin(cst2ast(e));
-    case (Expr)`! <Expr e>`: 
-        return not(cst2ast(e));
-    case (Expr)`<Expr lhs> * <Expr rhs>`: 
-        return mul(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> / <Expr rhs>`: 
-        return div(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> + <Expr rhs>`: 
-        return add(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> - <Expr rhs>`: 
-        return sub(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> \> <Expr rhs>`: 
-        return gt(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> \< <Expr rhs>`: 
-        return lt(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> \>= <Expr rhs>`: 
-        return geq(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> \<= <Expr rhs>`: 
-        return leq(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> == <Expr rhs>`: 
-        return equal(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> != <Expr rhs>`: 
-        return neq(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> && <Expr rhs>`: 
-        return and(cst2ast(lhs), cst2ast(rhs));
-    case (Expr)`<Expr lhs> || <Expr rhs>`: 
-        return or(cst2ast(lhs), cst2ast(rhs));
+    case f:(Expr)`+ <Expr e>`: 
+        return unaryPlus(cst2ast(e), src=f.src);
+    case f:(Expr)`- <Expr e>`: 
+        return unaryMin(cst2ast(e), src=f.src);
+    case f:(Expr)`! <Expr e>`: 
+        return not(cst2ast(e), src=f.src);
+    case f:(Expr)`<Expr lhs> * <Expr rhs>`: 
+        return mul(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> / <Expr rhs>`: 
+        return div(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> + <Expr rhs>`: 
+        return add(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> - <Expr rhs>`: 
+        return sub(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> \> <Expr rhs>`: 
+        return gt(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> \< <Expr rhs>`: 
+        return lt(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> \>= <Expr rhs>`: 
+        return geq(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> \<= <Expr rhs>`: 
+        return leq(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> == <Expr rhs>`: 
+        return equal(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> != <Expr rhs>`: 
+        return neq(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> && <Expr rhs>`: 
+        return and(cst2ast(lhs), cst2ast(rhs), src=f.src);
+    case f:(Expr)`<Expr lhs> || <Expr rhs>`: 
+        return or(cst2ast(lhs), cst2ast(rhs), src=f.src);
     
     default: throw "Unhandled expression: <e>";
   }
