@@ -14,24 +14,11 @@ import IO;
 //TODO: also see https://www.rascal-mpl.org/docs/Library/util/IDEServices/#util-IDEServices-showMessage
 // Either void logMessage(Message message) or void showMessage(Message message)
 
-//TODO: ?
+//TODO: ? Probs in Eval
 // - deadlock
 // - reachability (if statement always false)
 // - dead code
 // - non-determinism
-
-// TODO: see QL.pdf under optional
-// Type check conditions and variables: the expressions in conditions should be type
-// correct and should ultimately be booleans. The assigned variables should be
-// assigned consistently: each assignment should use the same type.
-
-//TODO:
-// - The type checker detects:
-//    * reference to undefined questions
-//    * duplicate question declarations with different types
-//    * conditions that are not of the type boolean
-//    * operands of invalid type to operators
-//    * duplicate labels (warning)
 
 data Type
   = tint()
@@ -62,13 +49,11 @@ TEnv collect(AForm f) {
         tenv += <var.src, var.name, label, typeOf(varType)>;
     }
 
-    //TODO: collect all type information and add it to TEnv
     return tenv; 
 }
 
 // Starting point, checks a form and returns a set of all messages
 set[Message] check(AForm f, TEnv tenv, UseDef useDef) {
-    //TODO: set should give the location, as only then can type errors be unique
     set[Message] messages = {};
 
     // Check all the questions
@@ -76,17 +61,10 @@ set[Message] check(AForm f, TEnv tenv, UseDef useDef) {
         messages += check(q, tenv, useDef);
     }
 
-    // Check all expressions, even recursively
-    //TODO: could also do this within AQuestion?
+    // Check all expressions (so also AExpr parts of an expressions)
     for(/ AExpr e := f) {
         messages += check(e, tenv, useDef);
     }
-
-    //TODO: warn on unused AId?
-    //TODO: warn on redefined? Or error?
-
-    //TODO: Check if / else? Maybe do in Eval??
-
 
     return messages; 
 }
@@ -98,13 +76,14 @@ set[Message] check(AQuestion q, TEnv tenv, UseDef useDef) {
     // Check questions here, against useDef and types etc
     set[Message] msgs = {};
 
-    //TODO warn on duplicate labels
-    //TODO: err on declared questions with the same name but different types.
+    //TODO: warn on unused AId?
+    //TODO: Check if / else always false etc? Maybe do in Eval??
+
     switch (q) {
         case question(str label, AId var, AType varType): 
-            msgs += {};
+            msgs += checkQuestions(q, tenv, useDef);
         case computedQuestion(str label, AId var, AType varType, AExpr expr):
-            msgs += checkType(expr, "computed question", typeOf(varType), tenv, useDef);
+            msgs += checkType(expr, "computed question", typeOf(varType), tenv, useDef) + checkQuestions(q, tenv, useDef);
         case ifelse(AExpr cond, list[AQuestion] questions, list[AQuestion] elseQuestions):
             msgs += checkType(cond, "conditional statement `if-else`", tbool(), tenv, useDef);
         case \if(AExpr cond, list[AQuestion] questions):
@@ -114,12 +93,39 @@ set[Message] check(AQuestion q, TEnv tenv, UseDef useDef) {
     return msgs; 
 }
 
+// Checks a (computed) question against other (computed) question(s):
+// - error on duplicate question declarations with different types
+// - warns on same question labels for different identifier
+// - warns on different label for the same identifier
+set[Message] checkQuestions(AQuestion q, TEnv tenv, UseDef useDef) {
+    // does not work on conditionals, assumes we get a question
+    assert(q is question || q is computedQuestion);
+
+    set[Message] msgs = {};
+
+    for(<loc def, str name, str label, Type \type> <- tenv) {
+        if (q.var.src != def) { // Only check if not comparing the same question
+            Type varType = typeOf(q.varType);
+            if(q.var.name == name) { // same var
+                if (varType != \type) { // diff type
+                    msgs += {error("Mismatched types in duplicate identifier `<name>`: declared here as `<typeName(varType)>`, duplicate is `<typeName(\type)>`", q.varType.src)};
+                }
+                if (q.label != label) { // diff label
+                    msgs += {warning("Duplicate identifier with different labels: labeled here as `<q.label>`, other label is `<label>`", q.var.src)};
+            
+                }
+            } else if (q.label == label) { // Diff varname same label
+                msgs += {warning("Duplicate label with different identifiers: identified here as `<q.var.name>`, other identifier is `<name>`", q.var.src)};
+            
+            }
+        }
+    }
+
+    return msgs;
+}
 
 
-
-// TODO: basically type checks
-// TODO: check if variable is even declared?
-//TODO: Check operand compatibility with operators.
+// Check operand compatibility with operators.
 // E.g. for an addition node add(lhs, rhs), 
 //   the requirement is that typeOf(lhs) == typeOf(rhs) == tint()
 set[Message] check(AExpr e, TEnv tenv, UseDef useDef) {
